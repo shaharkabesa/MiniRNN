@@ -1,7 +1,7 @@
 import numpy as np
 
 class rnnml:
-    def __init__(self):
+    def __init__(self, learning_rate):
         self.weight_matrix = np.array([])
         self.input_matrix = np.array([])
         self.target_matrix = np.array([])
@@ -12,7 +12,8 @@ class rnnml:
         self.previous_memory_cache = np.array([])
         self.loss = np.array([])
         self.error = np.array([])
-        self.learning_rate = 0.10
+        self.learning_rate = learning_rate
+        self.mode = "research"
 
     def createWeight(self, doors):
         size = self.input_matrix.shape
@@ -31,15 +32,20 @@ class rnnml:
     def sigmoid(self):
         output_matrix = 1 / (1 + np.exp(-self.probabilty_matrix))
         self.probabilty_matrix = output_matrix
-        self.lossfunction()
+        if self.mode == "research":
+            self.lossfunction()
+        elif self.mode == "recognize":
+            print(self.probabilty_matrix)
 
     def lossfunction(self):
         self.loss = -np.log((self.probabilty_matrix @ self.target_matrix[0]) + 1e-8)
+        print(f"Loss: {self.loss[0]}")
         self.errorCalculation()
 
     def errorCalculation(self):
         error = self.probabilty_matrix - self.target_matrix 
         self.error = error
+        
         self.gradientCalculation()
 
     def gradientCalculation(self):
@@ -63,12 +69,29 @@ class rnnml:
     
     def addTarget(self, target_matrix):
         self.target_matrix = target_matrix         
+        
+    def addInput(self, input_matrix):
+        self.input_matrix = input_matrix        
+
     def saveData(self):
         np.save("models/np1.npy", [self.weight_matrix,self.memory_weight, self.output_weight, self.previous_memory, self.previous_memory_cache])
-
+        print("Data saved succesfully")
     def loadData(self):
        self.weight_matrix = np.load("models/np1.npy")[0]
        self.memory_weight = np.load("models/np1.npy")[1]
        self.output_weight = np.load("models/np1.npy")[2]
        self.previous_memory = np.load("models/np1.npy")[3]
        self.previous_memory_cache = np.load("models/np1.npy")[4]
+       print("Data loaded succesfully")
+    
+    
+    def startResearch(self,amount):
+
+        for i in range(amount):
+            self.forwardpass()
+        self.saveData()
+    def recognize(self):
+
+        self.mode = "recognize"
+        self.input_matrix = np.array([[int(input("Enter a number: "))]])
+        self.forwardpass()
