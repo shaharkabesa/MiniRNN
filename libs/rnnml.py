@@ -93,5 +93,4 @@ class rnnml:
     def recognize(self):
 
         self.mode = "recognize"
-        self.input_matrix = np.array([[int(input("Enter a number: "))]])
         self.forwardpass()
